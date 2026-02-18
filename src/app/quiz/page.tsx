@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { words } from '@/data/words';
 import { Word } from '@/types/word';
 import { generateDistractors, shuffleOptions } from '@/lib/quiz';
@@ -24,7 +24,7 @@ export default function QuizPage() {
     }
   }, [currentIndex]);
 
-  const handleSelect = (word: Word) => {
+  const handleSelect = useCallback((word: Word) => {
     if (selectedId) return;
 
     setSelectedId(word.id);
@@ -44,7 +44,26 @@ export default function QuizPage() {
         setIsCorrect(null);
       }
     }, 1500);
-  };
+  }, [selectedId, currentWord, currentIndex]);
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      const key = e.key.toLowerCase();
+
+      if (key === ' ') {
+        e.preventDefault();
+        speak(currentWord.word);
+      } else if (['1', '2', '3', '4'].includes(key) && !selectedId) {
+        const index = parseInt(key) - 1;
+        if (options[index]) handleSelect(options[index]);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentWord, options, selectedId, handleSelect]);
 
   if (currentIndex >= words.length) {
     return (
@@ -78,7 +97,7 @@ export default function QuizPage() {
         </div>
 
         <div className="grid gap-4">
-          {options.map((option) => {
+          {options.map((option, index) => {
             const isSelected = selectedId === option.id;
             const isCurrentCorrect = option.id === currentWord.id;
 
@@ -92,8 +111,9 @@ export default function QuizPage() {
                 key={option.id}
                 onClick={() => handleSelect(option)}
                 disabled={!!selectedId}
-                className={`${bgColor} p-6 rounded-lg border-2 border-gray-200 text-left text-xl transition-all disabled:cursor-not-allowed`}
+                className={`${bgColor} p-6 rounded-lg border-2 border-gray-200 text-left text-xl transition-all disabled:cursor-not-allowed flex items-center gap-4`}
               >
+                <span className="text-gray-400 font-mono text-sm">{index + 1}</span>
                 {option.translation}
               </button>
             );
