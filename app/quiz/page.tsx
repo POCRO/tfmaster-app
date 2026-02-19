@@ -21,6 +21,7 @@ export default function QuizPage() {
       const distractors = generateDistractors(currentWord, words);
       const allOptions = shuffleOptions([currentWord, ...distractors]);
       setOptions(allOptions);
+      speak(currentWord.word);
     }
   }, [currentIndex]);
 
@@ -41,7 +42,7 @@ export default function QuizPage() {
       setCurrentIndex(prev => prev + 1);
       setSelectedId(null);
       setIsCorrect(null);
-    }, 1500);
+    }, 600);
   }, [selectedId, currentWord, currentIndex]);
 
   useEffect(() => {
