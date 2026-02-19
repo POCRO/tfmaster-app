@@ -2,31 +2,56 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { words } from '@/src/data/words';
+import { useRouter } from 'next/navigation';
 import { Word } from '@/src/types/word';
 import { generateDistractors, shuffleOptions } from '@/src/lib/quiz';
 import { speak } from '@/src/lib/speech';
+import { useAuth } from '@/src/lib/auth-context';
+import { getTodayWords, recordAnswer } from '@/src/lib/user-progress';
+import { supabase } from '@/src/lib/supabase';
 
 export default function QuizPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const [words, setWords] = useState<Word[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [options, setOptions] = useState<Word[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState({ correct: 0, wrong: 0 });
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/auth');
+    }
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
+    if (user) {
+      loadWords();
+    }
+  }, [user]);
+
+  const loadWords = async () => {
+    const { data: allWords } = await supabase.from('words').select('*').limit(20);
+    setWords(allWords || []);
+    setLoading(false);
+  };
+
   const currentWord = words[currentIndex];
 
   useEffect(() => {
-    if (currentWord) {
+    if (currentWord && words.length > 0) {
       const distractors = generateDistractors(currentWord, words);
       const allOptions = shuffleOptions([currentWord, ...distractors]);
       setOptions(allOptions);
       speak(currentWord.word);
     }
-  }, [currentIndex]);
+  }, [currentIndex, words, currentWord]);
 
-  const handleSelect = useCallback((word: Word) => {
-    if (selectedId) return;
+  const handleSelect = useCallback(async (word: Word) => {
+    if (selectedId || !user) return;
 
     setSelectedId(word.id);
     const correct = word.id === currentWord.id;
@@ -38,12 +63,14 @@ export default function QuizPage() {
       setScore(prev => ({ ...prev, wrong: prev.wrong + 1 }));
     }
 
+    await recordAnswer(user.id, currentWord.id, correct);
+
     setTimeout(() => {
       setCurrentIndex(prev => prev + 1);
       setSelectedId(null);
       setIsCorrect(null);
     }, 600);
-  }, [selectedId, currentWord, currentIndex]);
+  }, [selectedId, currentWord, user]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -63,6 +90,14 @@ export default function QuizPage() {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [currentWord, options, selectedId, handleSelect]);
+
+  if (loading || authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+        <p className="text-slate-300">加载中...</p>
+      </div>
+    );
+  }
 
   if (currentIndex >= words.length) {
     return (

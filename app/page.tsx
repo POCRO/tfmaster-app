@@ -1,11 +1,36 @@
+'use client';
+
 import Link from 'next/link';
+import { useAuth } from '@/src/lib/auth-context';
 
 export default function Home() {
+  const { user, signOut, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+        <p className="text-slate-300">加载中...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 p-4">
       <div className="text-center mb-12">
         <h1 className="text-6xl font-bold mb-4 text-white">Fischfutter fürs Gehirn</h1>
         <p className="text-xl text-slate-300">给大脑的鱼食 · 德福词汇学习平台</p>
+        {user ? (
+          <div className="mt-4">
+            <p className="text-sm text-slate-400">欢迎，{user.email}</p>
+            <button onClick={signOut} className="text-sm text-slate-500 hover:text-slate-300 mt-2">
+              退出登录
+            </button>
+          </div>
+        ) : (
+          <Link href="/auth" className="inline-block mt-4 text-blue-400 hover:text-blue-300">
+            登录/注册
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
