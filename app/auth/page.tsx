@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/src/lib/auth-context';
+import { supabase } from '@/src/lib/supabase';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
@@ -22,7 +24,23 @@ export default function AuthPage() {
       if (isLogin) {
         await signIn(email, password);
       } else {
+        const { data: code } = await supabase
+          .from('invite_codes')
+          .select('*')
+          .eq('code', inviteCode)
+          .eq('used', false)
+          .single();
+
+        if (!code) {
+          throw new Error('邀请码无效或已被使用');
+        }
+
         await signUp(email, password);
+
+        await supabase
+          .from('invite_codes')
+          .update({ used: true, used_at: new Date().toISOString() })
+          .eq('code', inviteCode);
       }
       router.push('/');
     } catch (err: any) {
@@ -61,6 +79,19 @@ export default function AuthPage() {
               required
             />
           </div>
+
+          {!isLogin && (
+            <div>
+              <input
+                type="text"
+                placeholder="邀请码"
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value)}
+                className="w-full p-3 rounded-lg bg-slate-700 text-white border-2 border-slate-600 focus:border-blue-400 outline-none"
+                required
+              />
+            </div>
+          )}
 
           {error && <p className="text-red-400 text-sm">{error}</p>}
 
