@@ -42,6 +42,28 @@ export default function ReadingDetailPage({ params }: { params: Promise<{ id: st
     }
   }, [isAutoPlaying, currentSentenceIndex, currentSentence, modelText]);
 
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      const key = e.key.toLowerCase();
+
+      if (key === ' ') {
+        e.preventDefault();
+        if (!isAutoPlaying) speak(currentSentence.german);
+      } else if (key === 'a') {
+        goToPrevious();
+      } else if (key === 'd') {
+        goToNext();
+      } else if (key === 'c') {
+        setShowTranslation(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentSentence, isAutoPlaying]);
+
   const goToNext = () => {
     if (currentSentenceIndex < modelText.sentences.length - 1) {
       setCurrentSentenceIndex(prev => prev + 1);
@@ -139,6 +161,10 @@ export default function ReadingDetailPage({ params }: { params: Promise<{ id: st
           <div className="text-center text-slate-400">
             进度: {currentSentenceIndex + 1} / {modelText.sentences.length}
           </div>
+        </div>
+
+        <div className="text-center text-slate-500 text-sm mt-4">
+          快捷键: A-上一句 | D-下一句 | 空格-播放 | C-切换翻译
         </div>
       </div>
     </div>
