@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Word } from '@/src/types/word';
 import { generateDistractors, shuffleOptions } from '@/src/lib/quiz';
 import { speak } from '@/src/lib/speech';
@@ -13,7 +13,10 @@ import { supabase } from '@/src/lib/supabase';
 export default function QuizPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const mode = searchParams.get('mode');
   const [words, setWords] = useState<Word[]>([]);
+  const [allWords, setAllWords] = useState<Word[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [options, setOptions] = useState<Word[]>([]);
@@ -31,24 +34,39 @@ export default function QuizPage() {
     if (user) {
       loadWords();
     }
-  }, [user]);
+  }, [user, mode]);
 
   const loadWords = async () => {
-    const { data: allWords } = await supabase.from('words').select('*').limit(20);
-    setWords(allWords || []);
+    if (!user) return;
+
+    const { data: all } = await supabase.from('words').select('*');
+    setAllWords(all || []);
+
+    const { reviewWords, newWords } = await getTodayWords(user.id, 20);
+
+    let wordsToStudy: Word[] = [];
+    if (mode === 'learn') {
+      wordsToStudy = newWords;
+    } else if (mode === 'review') {
+      wordsToStudy = reviewWords;
+    } else {
+      wordsToStudy = [...reviewWords, ...newWords].slice(0, 20);
+    }
+
+    setWords(wordsToStudy);
     setLoading(false);
   };
 
   const currentWord = words[currentIndex];
 
   useEffect(() => {
-    if (currentWord && words.length > 0) {
-      const distractors = generateDistractors(currentWord, words);
+    if (currentWord && allWords.length > 0) {
+      const distractors = generateDistractors(currentWord, allWords);
       const allOptions = shuffleOptions([currentWord, ...distractors]);
       setOptions(allOptions);
       speak(currentWord.word);
     }
-  }, [currentIndex, words, currentWord]);
+  }, [currentIndex, allWords, currentWord]);
 
   const handleSelect = useCallback(async (word: Word) => {
     if (selectedId || !user) return;

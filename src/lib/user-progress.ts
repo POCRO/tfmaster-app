@@ -1,6 +1,31 @@
 import { supabase } from './supabase';
 import { calculateNextReview } from './srs';
 
+export async function getTaskCounts(userId: string) {
+  const today = new Date().toISOString().split('T')[0];
+
+  const { count: reviewCount } = await supabase
+    .from('user_words')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .lte('next_review_date', today);
+
+  const { data: learnedWords } = await supabase
+    .from('user_words')
+    .select('word_id')
+    .eq('user_id', userId);
+
+  const learnedIds = learnedWords?.map(w => w.word_id) || [];
+
+  const { count: totalWords } = await supabase
+    .from('words')
+    .select('*', { count: 'exact', head: true });
+
+  const newWordCount = (totalWords || 0) - learnedIds.length;
+
+  return { reviewCount: reviewCount || 0, newWordCount };
+}
+
 export async function getTodayWords(userId: string, newWordLimit: number = 10) {
   const { data: reviewWords } = await supabase
     .from('user_words')

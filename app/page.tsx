@@ -1,10 +1,19 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/src/lib/auth-context';
+import { getTaskCounts } from '@/src/lib/user-progress';
 
 export default function Home() {
   const { user, signOut, loading } = useAuth();
+  const [taskCounts, setTaskCounts] = useState({ reviewCount: 0, newWordCount: 0 });
+
+  useEffect(() => {
+    if (user) {
+      getTaskCounts(user.id).then(setTaskCounts);
+    }
+  }, [user]);
 
   if (loading) {
     return (
@@ -33,16 +42,32 @@ export default function Home() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full">
         <Link
-          href="/quiz"
+          href="/quiz?mode=learn"
           className="bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-2xl p-8 transition-all hover:scale-105"
         >
           <div className="text-center">
             <div className="text-5xl mb-4">📚</div>
-            <h2 className="text-3xl font-bold text-white mb-3">背单词</h2>
-            <p className="text-slate-300 mb-4">4选1测验模式</p>
-            <p className="text-slate-400 text-sm">20个核心词汇</p>
+            <h2 className="text-3xl font-bold text-white mb-3">学习</h2>
+            <p className="text-slate-300 mb-4">学习新词汇</p>
+            {user && (
+              <p className="text-blue-400 text-2xl font-bold">{taskCounts.newWordCount} 个新词</p>
+            )}
+          </div>
+        </Link>
+
+        <Link
+          href="/quiz?mode=review"
+          className="bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-2xl p-8 transition-all hover:scale-105"
+        >
+          <div className="text-center">
+            <div className="text-5xl mb-4">🔄</div>
+            <h2 className="text-3xl font-bold text-white mb-3">复习</h2>
+            <p className="text-slate-300 mb-4">复习已学词汇</p>
+            {user && (
+              <p className="text-green-400 text-2xl font-bold">{taskCounts.reviewCount} 个待复习</p>
+            )}
           </div>
         </Link>
 
