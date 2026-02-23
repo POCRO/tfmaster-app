@@ -17,8 +17,10 @@ async function importWords() {
     translation: word.translation,
     part_of_speech: word.partOfSpeech,
     ipa: word.ipa || null,
-    topic: word.topic,
-    level: word.level,
+    gender: word.gender || null,
+    plural: word.plural || null,
+    example_sentence: word.exampleSentence || null,
+    example_translation: word.exampleTranslation || null,
   }));
 
   const { data, error } = await supabase
