@@ -8,7 +8,7 @@ export interface ModelText {
   id: string;
   title: string;
   topic: string;
-  level: 'B2' | 'C1';
+  level: 'B2' | 'C1' | 'B2/C1';
   examYear?: string;
   examLocation?: string;
   examPrompt?: string;
