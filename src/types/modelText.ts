@@ -9,5 +9,8 @@ export interface ModelText {
   title: string;
   topic: string;
   level: 'B2' | 'C1';
+  examYear?: string;
+  examLocation?: string;
+  examPrompt?: string;
   sentences: Sentence[];
 }

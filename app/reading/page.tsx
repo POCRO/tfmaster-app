@@ -23,13 +23,23 @@ export default function ReadingListPage() {
               className="bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-2xl p-6 transition-all hover:scale-105"
             >
               <h2 className="text-2xl font-bold text-white mb-3">{text.title}</h2>
-              <div className="flex gap-2 mb-3">
+              <div className="flex gap-2 mb-3 flex-wrap">
                 <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
                   {text.topic}
                 </span>
                 <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
                   {text.level}
                 </span>
+                {text.examYear && (
+                  <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm">
+                    真题 {text.examYear}
+                  </span>
+                )}
+                {text.examLocation && (
+                  <span className="bg-purple-500 text-white px-3 py-1 rounded-full text-sm">
+                    {text.examLocation}
+                  </span>
+                )}
               </div>
               <p className="text-slate-400 text-sm">{text.sentences.length} 个句子</p>
             </Link>

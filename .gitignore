@@ -46,3 +46,6 @@ temp_apkg/
 *.backup
 supabase/import-words.sql
 src/data/words-imported.ts
+
+# reference materials
+content/ref/

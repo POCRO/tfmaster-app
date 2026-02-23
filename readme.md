@@ -1,6 +1,6 @@
 # TFMaster - 项目需求文档
 
-## 项目状态 (2026-02-19)
+## 项目状态 (2026-02-23)
 
 **✅ v1.0 MVP 已完成**
 - 基础测验系统（4选1）
@@ -15,12 +15,19 @@
 - ✅ Phase 2.5: 首页三大功能入口
 - ✅ Phase 2.6: 范文跟读功能
 
+**✅ v3.0 Phase 3.1 已完成**
+- ✅ 词库扩充至 2072 个单词（德语专四完整词库）
+- ✅ 数据库结构优化（移除 level/topic 字段）
+- ✅ apkg 导入工具链（解析、转换、SQL生成）
+- ✅ 范文内容管理系统（Markdown → 数据）
+
 **当前功能：**
 - 用户注册/登录（邀请码系统）
-- 从数据库加载词汇
+- 2072 个德语专四词汇学习
 - 答题进度自动保存
 - 智能复习间隔计算（艾宾浩斯曲线）
 - 范文跟读（逐句播放、自动播放、键盘快捷键）
+- Markdown 格式范文管理
 
 ---
 
@@ -169,43 +176,37 @@ function calculateNextReview(quality, easeFactor, interval, repetitions) {
 
 #### 3.1 德福专项词库
 
+**当前状态：✅ 2072 个单词已导入**
+
 **数据结构：**
 ```typescript
 interface Word {
   id: string;
   word: string;              // 德语单词
-  ipa: string;               // IPA 音标
+  translation: string;       // 中文释义
   partOfSpeech: string;      // 词性 (n./v./adj./adv.)
   gender?: string;           // 名词性别 (der/die/das)
-  translation: string;       // 中文释义
-  exampleSentence: string;   // 德福例句
-  exampleTranslation: string;// 例句中文翻译
-  topic: string[];           // 话题标签
-  level: string;             // 等级 (B2/C1)
-  synonyms: string[];        // 近义词 ID 列表
-  conjugation?: object;      // 动词变位
+  ipa?: string;              // IPA 音标
+  exampleSentence?: string;  // 德福例句
+  exampleTranslation?: string;// 例句中文翻译
   plural?: string;           // 名词复数
 }
 ```
 
-**内容要求：**
-- v1.0: 50-100 个高频词（手动整理）
-- v2.0: 500-1000 个德福核心词汇
-- v3.0: 2000+ 个完整德福词库
+**数据来源：**
+- ✅ 德语专四.apkg（2072 个完整词汇）
+- 包含词性、性别、例句等完整信息
 
-**话题分类：**
-- 大学生活 (Universitätsleben)
-- 科学研究 (Wissenschaft)
-- 环境保护 (Umweltschutz)
-- 人口社会 (Gesellschaft)
-- 经济发展 (Wirtschaft)
-- 文化教育 (Bildung)
+**导入工具链：**
+- `scripts/import-apkg.js` - 解析 Anki .apkg 文件
+- `scripts/generate-import-sql.js` - 生成 SQL 导入脚本
+- `scripts/import-to-supabase.js` - 直接导入到 Supabase
 
 **验收标准：**
-- [ ] 每个单词包含完整的字段信息
+- [x] 每个单词包含完整的字段信息
+- [x] 词库规模达到 2000+ 词
 - [ ] 例句来自真实德福考试或模拟题
 - [ ] 同义词关联准确，便于生成干扰项
-- [ ] 话题标签覆盖德福考试所有主题
 
 #### 3.2 用户进度数据
 

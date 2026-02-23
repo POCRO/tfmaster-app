@@ -15,7 +15,21 @@ function parseMarkdown(content) {
     while (i < lines.length && lines[i] !== '---') {
       const [key, ...valueParts] = lines[i].split(':');
       if (key && valueParts.length) {
-        meta[key.trim()] = valueParts.join(':').trim();
+        const value = valueParts.join(':').trim();
+        if (value === '|') {
+          // Multi-line text
+          i++;
+          const multilineContent = [];
+          while (i < lines.length && lines[i] !== '---' && (lines[i].startsWith('  ') || lines[i].trim() === '')) {
+            if (lines[i].trim()) {
+              multilineContent.push(lines[i].substring(2));
+            }
+            i++;
+          }
+          meta[key.trim()] = multilineContent.join('\n');
+          continue;
+        }
+        meta[key.trim()] = value;
       }
       i++;
     }
@@ -58,7 +72,7 @@ files.forEach((file, index) => {
   const parsed = parseMarkdown(content);
 
   if (parsed) {
-    modelTexts.push({
+    const modelText = {
       id: String(index + 1),
       title: parsed.meta.title,
       topic: parsed.meta.topic,
@@ -67,7 +81,11 @@ files.forEach((file, index) => {
         ...s,
         id: `${index + 1}-${i + 1}`
       }))
-    });
+    };
+    if (parsed.meta.examYear) modelText.examYear = parsed.meta.examYear;
+    if (parsed.meta.examLocation) modelText.examLocation = parsed.meta.examLocation;
+    if (parsed.meta.examPrompt) modelText.examPrompt = parsed.meta.examPrompt;
+    modelTexts.push(modelText);
   }
 });
 
