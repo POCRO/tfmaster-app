@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Word } from '@/src/types/word';
@@ -10,7 +10,7 @@ import { useAuth } from '@/src/lib/auth-context';
 import { getTodayWords, recordAnswer } from '@/src/lib/user-progress';
 import { supabase } from '@/src/lib/supabase';
 
-export default function QuizPage() {
+function QuizContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -186,5 +186,17 @@ export default function QuizPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function QuizPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+        <p className="text-slate-300">加载中...</p>
+      </div>
+    }>
+      <QuizContent />
+    </Suspense>
   );
 }
