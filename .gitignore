@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# apkg import temp files
+temp_apkg/
+*.apkg
+*.backup
+supabase/import-words.sql
+src/data/words-imported.ts

@@ -3,7 +3,9 @@ export interface Word {
   word: string;
   translation: string;
   partOfSpeech: string;
-  topic: string[];
-  level: string;
   ipa?: string;
+  gender?: string;
+  plural?: string;
+  exampleSentence?: string;
+  exampleTranslation?: string;
 }

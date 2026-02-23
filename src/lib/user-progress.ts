@@ -34,11 +34,20 @@ export async function getTodayWords(userId: string, newWordLimit: number = 10) {
     .lte('next_review_date', new Date().toISOString().split('T')[0])
     .order('next_review_date', { ascending: true });
 
-  const { data: newWords } = await supabase
-    .from('words')
-    .select('*')
-    .not('id', 'in', `(SELECT word_id FROM user_words WHERE user_id = '${userId}')`)
-    .limit(newWordLimit);
+  const { data: learnedWords } = await supabase
+    .from('user_words')
+    .select('word_id')
+    .eq('user_id', userId);
+
+  const learnedIds = learnedWords?.map(w => w.word_id) || [];
+
+  let newWordsQuery = supabase.from('words').select('*');
+
+  if (learnedIds.length > 0) {
+    newWordsQuery = newWordsQuery.not('id', 'in', `(${learnedIds.join(',')})`);
+  }
+
+  const { data: newWords } = await newWordsQuery.limit(newWordLimit);
 
   return {
     reviewWords: reviewWords?.map(uw => uw.words) || [],
