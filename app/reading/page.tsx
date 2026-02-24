@@ -2,11 +2,14 @@
 
 import Link from 'next/link';
 import { modelTexts } from '@/src/data/modelTexts';
+import { PageBackground } from '@/src/components/PageBackground';
 
 export default function ReadingListPage() {
   return (
-    <div className="min-h-screen bg-slate-900 p-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen relative p-4">
+      <PageBackground page="readingList" />
+
+      <div className="max-w-6xl mx-auto relative z-20">
         <div className="mb-8">
           <Link href="/" className="text-slate-400 hover:text-slate-300 mb-4 inline-block">
             ← 返回首页
@@ -20,7 +23,7 @@ export default function ReadingListPage() {
             <Link
               key={text.id}
               href={`/reading/${text.id}`}
-              className="bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-2xl p-6 transition-all hover:scale-105"
+              className="bg-slate-800/90 hover:bg-slate-700/90 backdrop-blur-sm border-2 border-slate-600 rounded-2xl p-6 transition-all hover:scale-105 shadow-xl"
             >
               <h2 className="text-2xl font-bold text-white mb-3">{text.title}</h2>
               <div className="flex gap-2 mb-3 flex-wrap">

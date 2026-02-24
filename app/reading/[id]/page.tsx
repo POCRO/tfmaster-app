@@ -5,6 +5,7 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { modelTexts } from '@/src/data/modelTexts';
 import { speak, stopSpeaking } from '@/src/lib/speech';
+import { PageBackground } from '@/src/components/PageBackground';
 
 export default function ReadingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -114,9 +115,11 @@ export default function ReadingDetailPage({ params }: { params: Promise<{ id: st
   };
 
   return (
-    <div className="h-screen bg-slate-900 flex flex-col">
+    <div className="h-screen flex flex-col relative">
+      <PageBackground page="readingDetail" />
+
       {/* 顶部标题栏 */}
-      <div className="p-4 border-b border-slate-700">
+      <div className="p-4 border-b border-slate-700 relative z-20 bg-slate-900/50 backdrop-blur-sm">
         <Link href="/reading" className="text-slate-400 hover:text-slate-300 mb-2 inline-block">
           ← 返回列表
         </Link>
@@ -130,11 +133,11 @@ export default function ReadingDetailPage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* 主内容区：左右分栏 */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative z-20">
         {/* 左侧栏：考题原文 */}
         {modelText.examPrompt && (
           <div className="w-1/4 border-r border-slate-700 overflow-y-auto p-4">
-            <div className="bg-slate-800 border-2 border-yellow-500 rounded-xl p-4 sticky top-0">
+            <div className="bg-slate-800/90 backdrop-blur-sm border-2 border-yellow-500 rounded-xl p-4 sticky top-0 shadow-xl">
               <h2 className="text-xl font-bold text-yellow-400 mb-3">📝 考题原文</h2>
               <div className="text-slate-200 text-base prose prose-invert prose-sm max-w-none">
                 <ReactMarkdown>{modelText.examPrompt}</ReactMarkdown>
@@ -145,7 +148,7 @@ export default function ReadingDetailPage({ params }: { params: Promise<{ id: st
 
         {/* 右侧栏：范文内容 */}
         <div className="flex-1 overflow-y-auto p-4 pb-48">
-          <div className="bg-slate-800 rounded-xl p-6">
+          <div className="bg-slate-800/90 backdrop-blur-sm rounded-xl p-6 shadow-xl">
             {modelText.sentences.map((sentence, index) => (
               <p key={sentence.id} id={`sentence-${index}`} className={`text-lg mb-3 transition-all ${index === currentSentenceIndex ? 'text-white bg-slate-700 p-3 rounded-lg font-semibold' : 'text-slate-400'}`}>
                 {sentence.german}
@@ -156,29 +159,29 @@ export default function ReadingDetailPage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* 底部固定控制栏 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-slate-800 border-t border-slate-700 p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-slate-800/95 backdrop-blur-md border-t border-slate-700 p-4 z-30 shadow-2xl">
         <div className="max-w-6xl mx-auto">
           {showTranslation && (
-            <div className="bg-slate-700 rounded-lg p-3 mb-3">
+            <div className="bg-slate-700/90 backdrop-blur-sm rounded-lg p-3 mb-3 shadow-lg">
               <p className="text-slate-200 text-center text-lg">{currentSentence.chinese}</p>
             </div>
           )}
           <div className="flex items-center justify-between gap-3 mb-3">
-            <button onClick={goToPrevious} disabled={currentSentenceIndex === 0 || isAutoPlaying} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg disabled:opacity-50">
+            <button onClick={goToPrevious} disabled={currentSentenceIndex === 0 || isAutoPlaying} className="bg-slate-700/90 hover:bg-slate-600/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg disabled:opacity-50 shadow-lg">
               ◀ 上一句
             </button>
             <div className="flex gap-2">
-              <button onClick={() => speak(currentSentence.german)} disabled={isAutoPlaying || audioMode === 'full-auto'} className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg disabled:opacity-50">
+              <button onClick={() => speak(currentSentence.german)} disabled={isAutoPlaying || audioMode === 'full-auto'} className="bg-blue-500/90 hover:bg-blue-600/90 backdrop-blur-sm text-white px-6 py-2 rounded-lg disabled:opacity-50 shadow-lg">
                 🔊 播放
               </button>
-              <button onClick={toggleAudioMode} className={`${audioMode === 'silent' ? 'bg-slate-600' : audioMode === 'semi-auto' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'} text-white px-4 py-2 rounded-lg`}>
+              <button onClick={toggleAudioMode} className={`${audioMode === 'silent' ? 'bg-slate-600/90' : audioMode === 'semi-auto' ? 'bg-yellow-500/90 hover:bg-yellow-600/90' : 'bg-green-500/90 hover:bg-green-600/90'} backdrop-blur-sm text-white px-4 py-2 rounded-lg shadow-lg`}>
                 {audioModeLabel[audioMode]}
               </button>
-              <button onClick={() => setShowTranslation(!showTranslation)} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg">
+              <button onClick={() => setShowTranslation(!showTranslation)} className="bg-slate-700/90 hover:bg-slate-600/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg shadow-lg">
                 {showTranslation ? '隐藏' : '显示'}翻译
               </button>
             </div>
-            <button onClick={goToNext} disabled={currentSentenceIndex === modelText.sentences.length - 1 || isAutoPlaying} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg disabled:opacity-50">
+            <button onClick={goToNext} disabled={currentSentenceIndex === modelText.sentences.length - 1 || isAutoPlaying} className="bg-slate-700/90 hover:bg-slate-600/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg disabled:opacity-50 shadow-lg">
               下一句 ▶
             </button>
           </div>
