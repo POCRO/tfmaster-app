@@ -4,13 +4,14 @@ import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { modelTexts } from '@/src/data/modelTexts';
-import { speak } from '@/src/lib/speech';
+import { speak, stopSpeaking } from '@/src/lib/speech';
 
 export default function ReadingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   const [showTranslation, setShowTranslation] = useState(false);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [audioMode, setAudioMode] = useState<'silent' | 'semi-auto' | 'full-auto'>('silent');
 
   const modelText = modelTexts.find(t => t.id === id);
 
@@ -68,15 +69,48 @@ export default function ReadingDetailPage({ params }: { params: Promise<{ id: st
   const goToNext = () => {
     if (currentSentenceIndex < modelText.sentences.length - 1) {
       setCurrentSentenceIndex(prev => prev + 1);
-      setShowTranslation(false);
     }
   };
 
   const goToPrevious = () => {
     if (currentSentenceIndex > 0) {
       setCurrentSentenceIndex(prev => prev - 1);
-      setShowTranslation(false);
     }
+  };
+
+  // 半自动模式：切换句子时自动播放
+  useEffect(() => {
+    if (audioMode === 'semi-auto') {
+      speak(currentSentence.german);
+    }
+  }, [currentSentenceIndex, audioMode, currentSentence]);
+
+  // 自动滚动到当前句子
+  useEffect(() => {
+    const currentElement = document.getElementById(`sentence-${currentSentenceIndex}`);
+    if (currentElement) {
+      currentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [currentSentenceIndex]);
+
+  // 切换声音模式
+  const toggleAudioMode = () => {
+    if (audioMode === 'silent') {
+      setAudioMode('semi-auto');
+    } else if (audioMode === 'semi-auto') {
+      setAudioMode('full-auto');
+      setIsAutoPlaying(true);
+    } else {
+      setAudioMode('silent');
+      setIsAutoPlaying(false);
+      stopSpeaking(); // 切换到静音模式时立即停止播放
+    }
+  };
+
+  const audioModeLabel = {
+    'silent': '🔇 静音',
+    'semi-auto': '🔉 半自动',
+    'full-auto': '🔊 全自动'
   };
 
   return (
@@ -113,7 +147,7 @@ export default function ReadingDetailPage({ params }: { params: Promise<{ id: st
         <div className="flex-1 overflow-y-auto p-4 pb-48">
           <div className="bg-slate-800 rounded-xl p-6">
             {modelText.sentences.map((sentence, index) => (
-              <p key={sentence.id} className={`text-lg mb-3 transition-all ${index === currentSentenceIndex ? 'text-white bg-slate-700 p-3 rounded-lg font-semibold' : 'text-slate-400'}`}>
+              <p key={sentence.id} id={`sentence-${index}`} className={`text-lg mb-3 transition-all ${index === currentSentenceIndex ? 'text-white bg-slate-700 p-3 rounded-lg font-semibold' : 'text-slate-400'}`}>
                 {sentence.german}
               </p>
             ))}
@@ -134,11 +168,11 @@ export default function ReadingDetailPage({ params }: { params: Promise<{ id: st
               ◀ 上一句
             </button>
             <div className="flex gap-2">
-              <button onClick={() => speak(currentSentence.german)} disabled={isAutoPlaying} className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg disabled:opacity-50">
+              <button onClick={() => speak(currentSentence.german)} disabled={isAutoPlaying || audioMode === 'full-auto'} className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg disabled:opacity-50">
                 🔊 播放
               </button>
-              <button onClick={() => setIsAutoPlaying(!isAutoPlaying)} className={`${isAutoPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white px-4 py-2 rounded-lg`}>
-                {isAutoPlaying ? '⏸ 停止' : '▶ 自动'}
+              <button onClick={toggleAudioMode} className={`${audioMode === 'silent' ? 'bg-slate-600' : audioMode === 'semi-auto' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'} text-white px-4 py-2 rounded-lg`}>
+                {audioModeLabel[audioMode]}
               </button>
               <button onClick={() => setShowTranslation(!showTranslation)} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg">
                 {showTranslation ? '隐藏' : '显示'}翻译
@@ -149,7 +183,7 @@ export default function ReadingDetailPage({ params }: { params: Promise<{ id: st
             </button>
           </div>
           <div className="text-center text-slate-400 text-sm">
-            进度: {currentSentenceIndex + 1} / {modelText.sentences.length} | 快捷键: A-上一句 | D-下一句 | 空格-播放 | C-切换翻译
+            进度: {currentSentenceIndex + 1} / {modelText.sentences.length} | 快捷键: A-上一句 | D-下一句 | 空格-播放 | C-切换翻译 | 当前模式: {audioModeLabel[audioMode]}
           </div>
         </div>
       </div>

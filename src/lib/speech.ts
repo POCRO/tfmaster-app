@@ -9,3 +9,8 @@ export function speak(text: string, lang: string = 'de-DE'): void {
 
   window.speechSynthesis.speak(utterance);
 }
+
+export function stopSpeaking(): void {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+}
