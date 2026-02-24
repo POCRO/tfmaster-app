@@ -22,3 +22,17 @@ export const overlayOpacity = {
   readingList: 0.80,
   readingDetail: 0.80,
 };
+
+// 字体配置
+// 可选字体：
+// - 'Atkinson Hyperlegible' - 专为可读性优化，字母区分度高（推荐用于德语）
+// - 'Inter' - 现代、清晰的无衬线字体
+// - 'Lexend' - 专为提高阅读速度设计
+// - 'Fira Sans' - 现代、清晰，对德语特殊字符支持好
+export const fonts = {
+  // 单词显示字体（用于背诵页面的德语单词）
+  word: 'Atkinson Hyperlegible',
+
+  // 正文字体（用于选项、释义等）
+  body: 'Atkinson Hyperlegible',
+};

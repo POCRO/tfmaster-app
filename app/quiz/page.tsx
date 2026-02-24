@@ -267,11 +267,15 @@ function QuizContent() {
 
           {/* 单词显示区域 - 与背诵页面一致 */}
           <div className="text-center mb-12">
-            <h1 className="text-6xl font-bold mb-2 text-white">{currentWord.word}</h1>
+            <h1
+              className="text-6xl font-bold mb-2 text-white cursor-pointer hover:text-blue-300 transition-colors font-[family-name:var(--font-atkinson)]"
+              onClick={() => speak(currentWord.word)}
+            >
+              {currentWord.word}
+            </h1>
             {currentWord.ipa && (
               <p className="text-xl text-slate-400 mb-4">{currentWord.ipa}</p>
             )}
-            <button onClick={() => speak(currentWord.word)} className="text-4xl hover:scale-110 transition-transform">🔊</button>
           </div>
 
           {/* 详细释义区域 - 替代选项位置 */}
@@ -361,7 +365,12 @@ function QuizContent() {
 
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-6 mb-2">
-            <h1 className="text-6xl font-bold text-white">{currentWord.word}</h1>
+            <h1
+              className="text-6xl font-bold text-white cursor-pointer hover:text-blue-300 transition-colors font-[family-name:var(--font-atkinson)]"
+              onClick={() => speak(currentWord.word)}
+            >
+              {currentWord.word}
+            </h1>
             {/* 进度指示器 - 两个上下排列的小点 */}
             <div className="flex flex-col gap-2">
               <div className={`w-3 h-3 rounded-full transition-colors ${
@@ -375,7 +384,6 @@ function QuizContent() {
           {currentWord.ipa && (
             <p className="text-xl text-slate-400 mb-4">{currentWord.ipa}</p>
           )}
-          <button onClick={() => speak(currentWord.word)} className="text-4xl hover:scale-110 transition-transform">🔊</button>
         </div>
 
         <div className="grid gap-3">
